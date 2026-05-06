@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "fe_passkey",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": []
+    },
+    {
+      "name": "fe_passkey (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "fe_passkey (iOS Simulator)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "iphone",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "fe_passkey (Android Emulator)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "android-emulator",
+      "program": "lib/main.dart"
+    }
+  ]
+}
