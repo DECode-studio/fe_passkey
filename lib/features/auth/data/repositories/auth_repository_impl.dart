@@ -107,10 +107,45 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     if (error is DioException) {
+      final rawError = error.error?.toString() ?? '';
+      final responseText = error.response?.data?.toString().toLowerCase() ?? '';
+      final isTimeout = error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.message?.toLowerCase().contains('timeout') == true;
+      final isTlsError = rawError.contains('CERTIFICATE_VERIFY_FAILED') ||
+          rawError.contains('HandshakeException');
+      final isNgrokOffline =
+          error.response?.statusCode == 404 &&
+          (responseText.contains('err_ngrok_3200') ||
+              responseText.contains('is offline') ||
+              responseText.contains('endpoint') && responseText.contains('offline'));
+      final isNetworkPolicyBlocked =
+          error.response?.statusCode == 403 &&
+          (responseText.contains('fortiguard') ||
+              responseText.contains('proxy avoidance') ||
+              responseText.contains('web page blocked'));
+
       throw ApiException(
-        message: error.message ?? 'Terjadi kesalahan jaringan',
+        message: isTimeout
+            ? 'Koneksi ke server timeout. Pastikan backend/tunnel aktif dan jaringan stabil.'
+            : isTlsError
+            ? 'Gagal koneksi TLS. Untuk environment development, cek sertifikat/tunnel (ngrok) atau gunakan build debug terbaru.'
+            : isNgrokOffline
+                ? 'Tunnel backend sedang offline (ERR_NGROK_3200). Jalankan ulang tunnel atau update API_BASE_URL ke endpoint aktif.'
+            : isNetworkPolicyBlocked
+                ? 'Akses ke URL backend diblokir kebijakan jaringan (FortiGuard/Proxy filter). Gunakan endpoint yang tidak diblokir atau jaringan lain.'
+                : (error.message ?? 'Terjadi kesalahan jaringan'),
         statusCode: error.response?.statusCode,
-        code: 'NETWORK_ERROR',
+        code: isTimeout
+            ? 'TIMEOUT_ERROR'
+            : isTlsError
+            ? 'TLS_ERROR'
+            : isNgrokOffline
+                ? 'TUNNEL_OFFLINE'
+            : isNetworkPolicyBlocked
+                ? 'NETWORK_BLOCKED'
+                : 'NETWORK_ERROR',
       );
     }
 
