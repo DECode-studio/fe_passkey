@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import '../config/env.dart';
 import '../storage/token_storage.dart';
@@ -33,6 +36,22 @@ class DioClient {
         logPrint: (obj) => debugPrint('[DIO] $obj'),
       ),
     );
+
+    if (!kReleaseMode) {
+      final adapter = dio.httpClientAdapter;
+      if (adapter is IOHttpClientAdapter) {
+        adapter.createHttpClient = () {
+          final client = HttpClient();
+          client.badCertificateCallback = (cert, host, port) {
+            // Dev-only TLS bypass for local tunnel/cert-chain issues.
+            return host.endsWith('.ngrok-free.dev') ||
+                host == 'localhost' ||
+                host == '10.0.2.2';
+          };
+          return client;
+        };
+      }
+    }
 
     return dio;
   }

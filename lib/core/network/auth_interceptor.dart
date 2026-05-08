@@ -66,8 +66,13 @@ class AuthInterceptor extends Interceptor {
         _isRefreshing = false;
       }
     } else if (statusCode == 403 || statusCode == 409) {
-      AuthLogger.logSecurityEvent('Critical Error $statusCode - Clearing Session');
-      await _tokenStorage.clear();
+      final hasAuthHeader =
+          err.requestOptions.headers['Authorization']?.toString().isNotEmpty ??
+          false;
+      if (hasAuthHeader) {
+        AuthLogger.logSecurityEvent('Critical Error $statusCode - Clearing Session');
+        await _tokenStorage.clear();
+      }
     }
 
     return handler.next(err);
