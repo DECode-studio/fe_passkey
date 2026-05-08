@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
+
 import '../models/auth_token_model.dart';
 import '../models/passkey_options_model.dart';
 
@@ -17,6 +18,7 @@ class AuthRemoteDatasource {
       '/passkey/register/options',
       data: {
         'email': email,
+        // ignore: use_null_aware_elements
         if (displayName != null) 'displayName': displayName,
       },
     );
