@@ -5,8 +5,8 @@ import '../../domain/usecases/check_passkey_support.dart';
 import '../../domain/usecases/login_with_passkey.dart';
 import '../../domain/usecases/logout.dart';
 import '../../domain/usecases/register_with_passkey.dart';
-import '../utils/auth_logger.dart';
 import '../utils/passkey_failure_mapper.dart';
+import '../../../core/utils/security_utils.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -67,6 +67,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
     AuthLogger.logPasskeyStart('Register');
 
+    // Check device security
+    final isSecure = await SecurityUtils.isDeviceSecure();
+    if (!isSecure) {
+      emit(state.copyWith(
+        status: AuthStatus.securityNotSet,
+        message: 'Security PIN/Biometric belum diatur. Mohon atur keamanan perangkat Anda terlebih dahulu.',
+      ));
+      return;
+    }
+
     try {
       await _registerWithPasskey(
         email: event.email,
@@ -89,6 +99,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
     AuthLogger.logPasskeyStart('Login');
+
+    // Check device security
+    final isSecure = await SecurityUtils.isDeviceSecure();
+    if (!isSecure) {
+      emit(state.copyWith(
+        status: AuthStatus.securityNotSet,
+        message: 'Security PIN/Biometric belum diatur. Mohon atur keamanan perangkat Anda terlebih dahulu.',
+      ));
+      return;
+    }
 
     try {
       await _loginWithPasskey(email: event.email);
