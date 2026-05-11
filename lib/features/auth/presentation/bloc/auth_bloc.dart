@@ -1,12 +1,14 @@
+import 'package:fe_passkey/core/storage/token_storage.dart';
+import 'package:fe_passkey/core/utils/auth_logger.dart';
+import 'package:fe_passkey/core/utils/security_utils.dart';
+import 'package:fe_passkey/features/auth/domain/usecases/check_passkey_support.dart';
+import 'package:fe_passkey/features/auth/domain/usecases/login_with_passkey.dart';
+import 'package:fe_passkey/features/auth/domain/usecases/logout.dart';
+import 'package:fe_passkey/features/auth/domain/usecases/register_with_passkey.dart';
+import 'package:fe_passkey/features/auth/presentation/utils/passkey_failure_mapper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import '../../../../core/storage/token_storage.dart';
-import '../../domain/usecases/check_passkey_support.dart';
-import '../../domain/usecases/login_with_passkey.dart';
-import '../../domain/usecases/logout.dart';
-import '../../domain/usecases/register_with_passkey.dart';
-import '../utils/passkey_failure_mapper.dart';
-import '../../../core/utils/security_utils.dart';
+
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -67,12 +69,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
     AuthLogger.logPasskeyStart('Register');
 
-    // Check device security
-    final isSecure = await SecurityUtils.isDeviceSecure();
-    if (!isSecure) {
+    // Check device security and Google Play Services
+    final requirements = await SecurityUtils.checkSecurityRequirements();
+    
+    if (!requirements['isSecure']!) {
       emit(state.copyWith(
         status: AuthStatus.securityNotSet,
         message: 'Security PIN/Biometric belum diatur. Mohon atur keamanan perangkat Anda terlebih dahulu.',
+      ));
+      return;
+    }
+
+    if (!requirements['isPlayServicesAvailable']!) {
+      emit(state.copyWith(
+        status: AuthStatus.playServicesMissing,
+        message: 'Google Play Services atau Google Password Manager belum aktif. Pastikan Anda sudah login ke Akun Google di perangkat ini.',
       ));
       return;
     }
@@ -100,12 +111,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
     AuthLogger.logPasskeyStart('Login');
 
-    // Check device security
-    final isSecure = await SecurityUtils.isDeviceSecure();
-    if (!isSecure) {
+    // Check device security and Google Play Services
+    final requirements = await SecurityUtils.checkSecurityRequirements();
+    
+    if (!requirements['isSecure']!) {
       emit(state.copyWith(
         status: AuthStatus.securityNotSet,
         message: 'Security PIN/Biometric belum diatur. Mohon atur keamanan perangkat Anda terlebih dahulu.',
+      ));
+      return;
+    }
+
+    if (!requirements['isPlayServicesAvailable']!) {
+      emit(state.copyWith(
+        status: AuthStatus.playServicesMissing,
+        message: 'Google Play Services atau Google Password Manager belum aktif. Pastikan Anda sudah login ke Akun Google di perangkat ini.',
       ));
       return;
     }

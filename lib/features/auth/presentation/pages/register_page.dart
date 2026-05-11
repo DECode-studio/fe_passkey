@@ -76,6 +76,23 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           );
         }
+
+        if (state.status == AuthStatus.playServicesMissing) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Google Account Diperlukan'),
+              content: Text(state.message ?? 'Passkey memerlukan Google Password Manager. Silakan login ke akun Google Anda di perangkat ini.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Tutup'),
+                ),
+              ],
+            ),
+          );
+        }
       },
       builder: (context, state) {
         final isLoading = state.status == AuthStatus.loading;

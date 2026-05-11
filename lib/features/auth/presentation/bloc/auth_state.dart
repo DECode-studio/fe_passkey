@@ -7,6 +7,7 @@ enum AuthStatus {
   unauthenticated,
   failure,
   securityNotSet,
+  playServicesMissing,
 }
 
 class AuthState extends Equatable {

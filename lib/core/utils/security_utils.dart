@@ -1,9 +1,33 @@
 import 'package:local_auth/local_auth.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:google_api_availability/google_api_availability.dart';
+import 'dart:io';
 import 'logger.dart';
 
 class SecurityUtils {
   static final LocalAuthentication _auth = LocalAuthentication();
+
+  /// Checks for all security requirements for Passkeys on Android
+  static Future<Map<String, bool>> checkSecurityRequirements() async {
+    final bool isSecure = await isDeviceSecure();
+    bool isPlayServicesAvailable = true;
+
+    if (Platform.isAndroid) {
+      try {
+        final GooglePlayServicesAvailability availability = 
+            await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability();
+        isPlayServicesAvailable = availability == GooglePlayServicesAvailability.success;
+      } catch (e) {
+        CoreLogger.e('Error checking Google Play Services: $e');
+        isPlayServicesAvailable = false;
+      }
+    }
+
+    return {
+      'isSecure': isSecure,
+      'isPlayServicesAvailable': isPlayServicesAvailable,
+    };
+  }
 
   /// Checks if the device has any security (PIN, Pattern, or Biometrics) set up.
   static Future<bool> isDeviceSecure() async {
@@ -11,14 +35,7 @@ class SecurityUtils {
       final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
       final bool canAuthenticate = canAuthenticateWithBiometrics || await _auth.isDeviceSupported();
       
-      // isDeviceSupported checks if the hardware is capable. 
-      // getAvailableBiometrics returns list of enrolled biometrics.
       final List<BiometricType> availableBiometrics = await _auth.getAvailableBiometrics();
-      
-      // On Android, if no PIN/Pattern is set, isDeviceSupported might still be true, 
-      // but we can't create passkeys. 
-      // We also need to check if any biometric or device lock is enrolled.
-      // Note: local_auth's isDeviceSupported() usually returns true if a PIN/Pattern/Password is set.
       
       return canAuthenticate && (availableBiometrics.isNotEmpty || await _auth.isDeviceSupported());
     } catch (e) {
