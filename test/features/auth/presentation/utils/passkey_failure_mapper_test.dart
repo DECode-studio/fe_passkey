@@ -40,4 +40,17 @@ void main() {
       'Koneksi ke server timeout. Cek backend/tunnel dan coba lagi.',
     );
   });
+
+  test('maps Android security validation error', () {
+    final message = PasskeyFailureMapper.map(
+      Exception(
+        'PlatformException(android-unhandled: androidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_DOM_EXCEPTION/androidx.credentials.TYPE_SECURITY_ERROR, The incoming request cannot be validated, The incoming request cannot be validated, null)',
+      ),
+    );
+
+    expect(
+      message,
+      'Konfigurasi passkey domain belum tervalidasi di Android. Cek assetlinks.json, SHA-256 signing key, lalu reinstall aplikasi.',
+    );
+  });
 }
