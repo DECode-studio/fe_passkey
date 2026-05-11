@@ -4,6 +4,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/passkey_recovery_help.dart';
+import '../../../../core/utils/security_utils.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,6 +49,30 @@ class _LoginPageState extends State<LoginPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+            ),
+          );
+        }
+
+        if (state.status == AuthStatus.securityNotSet) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('Keamanan Perangkat Belum Set'),
+              content: Text(state.message ?? 'Anda perlu mengatur PIN atau Biometrik terlebih dahulu untuk menggunakan Passkey.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    SecurityUtils.openSecuritySettings();
+                  },
+                  child: const Text('Atur Sekarang'),
+                ),
+              ],
             ),
           );
         }
