@@ -102,7 +102,10 @@ class AuthRepositoryImpl implements AuthRepository {
     if (error.toString().contains('passkey') ||
         error.toString().contains('authenticator') ||
         error.toString().contains('RegisterRequestType') ||
-        error.toString().contains('AuthenticateRequestType')) {
+        error.toString().contains('AuthenticateRequestType') ||
+        error.toString().contains('PlatformException') ||
+        error.toString().contains('TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_DOM_EXCEPTION') ||
+        error.toString().contains('TYPE_SECURITY_ERROR')) {
       throw error;
     }
 
