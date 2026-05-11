@@ -16,6 +16,7 @@ class SecurityUtils {
       try {
         final GooglePlayServicesAvailability availability = 
             await GoogleApiAvailability.instance.checkGooglePlayServicesAvailability();
+        CoreLogger.i('Google Play Services Availability: $availability');
         isPlayServicesAvailable = availability == GooglePlayServicesAvailability.success;
       } catch (e) {
         CoreLogger.e('Error checking Google Play Services: $e');
