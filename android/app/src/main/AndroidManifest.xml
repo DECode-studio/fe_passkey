@@ -5,7 +5,7 @@
         android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="asset_statements"
-            android:value="[{&quot;relation&quot;: [&quot;delegate_permission/common.get_login_creds&quot;], &quot;target&quot;: {&quot;namespace&quot;: &quot;web&quot;, &quot;site&quot;: &quot;https://be-passkey.vercel.app&quot;}}]" />
+            android:resource="@string/asset_statements" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
