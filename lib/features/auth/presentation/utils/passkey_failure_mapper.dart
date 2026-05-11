@@ -15,6 +15,12 @@ class PasskeyFailureMapper {
       return 'Passkey tidak ditemukan atau tidak bisa digunakan di device ini.';
     }
 
+    if (raw.contains('type_security_error') ||
+        raw.contains('type_create_public_key_credential_dom_exception') ||
+        (raw.contains('incoming request cannot be validated'))) {
+      return 'Konfigurasi passkey domain belum tervalidasi di Android. Cek assetlinks.json, SHA-256 signing key, lalu reinstall aplikasi.';
+    }
+
     if (raw.contains('network_blocked') ||
         raw.contains('fortiguard') ||
         raw.contains('proxy avoidance')) {
